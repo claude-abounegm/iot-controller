@@ -1,0 +1,7 @@
+{
+	"blinds": {
+		"UP_PIN": 22,
+		"STOP_PIN": 11,
+		"DOWN_PIN": 15
+	}
+}
