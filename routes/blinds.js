@@ -21,18 +21,25 @@ function sendSignal(pin) {
 	});
 }
 
-router.put('/up', function(req, res, next) {
-	sendSignal(config.blinds.UP_PIN);
-	res.end();
-});
+router.put('/', function(req, res, next) {
+	switch(req.body['action']) {
+		case 'up':
+			sendSignal(config.blinds.UP_PIN);
+		break;
 
-router.put('/down', function(req, res, next) {
-	sendSignal(config.blinds.DOWN_PIN);
-	res.end();
-});
+		case 'down':
+			sendSignal(config.blinds.DOWN_PIN);
+		break;
 
-router.put('/stop', function(req, res, next) {
-	sendSignal(config.blinds.STOP_PIN);
+		case 'stop':
+			sendSignal(config.blinds.STOP_PIN);
+		break;
+
+		default:
+			next();
+		return;
+	}
+
 	res.end();
 });
 
