@@ -24,4 +24,28 @@ $(function() {
 			data: { action: "stop" }
   		});
 	});
+
+	$(document).on('click', '#hvac_fan', function() {
+		$.ajax({
+			method: "PUT",
+			url: "/blinds",
+			data: { action: "fan" }
+  		});
+	});
+	
+	$(document).on('click', '#hvac_air', function() {
+		$.ajax({
+			method: "PUT",
+			url: "/blinds",
+			data: { action: "air" }
+  		});
+	});
+	
+	$(document).on('click', '#hvac_heat', function() {
+		$.ajax({
+			method: "PUT",
+			url: "/blinds",
+			data: { action: "heat" }
+  		});
+	});
 });

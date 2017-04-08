@@ -6,6 +6,9 @@ var config = require('../config.json');
 setupSignal(config.blinds.UP_PIN);
 setupSignal(config.blinds.STOP_PIN);
 setupSignal(config.blinds.DOWN_PIN);
+setupSignal(config.hvac.FAN_PIN);
+setupSignal(config.hvac.AIR_PIN);
+setupSignal(config.hvac.HEAT_PIN);
 
 function setupSignal(pin) {
 	gpio.setup(pin, gpio.DIR_OUT, () => {
@@ -33,6 +36,18 @@ router.put('/', function(req, res, next) {
 
 		case 'stop':
 			sendSignal(config.blinds.STOP_PIN);
+		break;
+	
+		case 'fan':
+			sendSignal(config.hvac.FAN_PIN);
+		break;
+		
+		case 'air':
+			sendSignal(config.hvac.AIR_PIN);
+		break;
+
+		case 'heat':
+			sendSignal(config.hvac.HEAT_PIN);
 		break;
 
 		default:

@@ -1,9 +1,15 @@
 {
-	"blinds": {
-		"UP_PIN": 22,
-		"STOP_PIN": 11,
-		"DOWN_PIN": 15
-	}
+	"blinds": 
+	{
+		"UP_PIN": 33,
+		"STOP_PIN": 35,
+		"DOWN_PIN": 37
+	},
 
-	TEST
+	"hvac": 
+	{
+		"FAN_PIN": 29,
+		"AIR_PIN": 31,
+		"HEAT_PIN": 32
+	}	
 }
