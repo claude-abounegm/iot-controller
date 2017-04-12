@@ -48,4 +48,12 @@ $(function() {
 			data: { action: "heat" }
   		});
 	});
+
+	$(document).on('click', '#hvac_off', function() {
+		$.ajax({
+			method: "PUT",
+			url: "/control",
+			data: { action: "hvacOff" }
+  		});
+	});
 });

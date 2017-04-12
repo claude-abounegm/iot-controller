@@ -16,7 +16,7 @@ function setupSignal(pin) {
 	});
 }
 
-function sendSignal(pin) {
+function sendRemoteSignal(pin) {
 	gpio.write(pin, 1, () => {
 		setTimeout(() => {
 			gpio.write(pin, 0);
@@ -24,30 +24,51 @@ function sendSignal(pin) {
 	});
 }
 
+function sendSignalOn(pin) {
+	gpio.write(pin, 1, () => {});
+}
+
+function sendSignalOff(pin) {
+	gpio.write(pin, 0, () => {});
+}
+
+
 router.put('/', function(req, res, next) {
 	switch(req.body['action']) {
 		case 'up':
-			sendSignal(config.blinds.UP_PIN);
+			sendRemoteSignal(config.blinds.UP_PIN);
 		break;
 
 		case 'down':
-			sendSignal(config.blinds.DOWN_PIN);
+			sendRemoteSignal(config.blinds.DOWN_PIN);
 		break;
 
 		case 'stop':
-			sendSignal(config.blinds.STOP_PIN);
+			sendRemoteSignal(config.blinds.STOP_PIN);
 		break;
 	
 		case 'fan':
-			sendSignal(config.hvac.FAN_PIN);
+			sendSignalOn(config.hvac.FAN_PIN);
+			sendSignalOff(config.hvac.AIR_PIN);
+			sendSignalOff(config.hvac.HEAT_PIN);
 		break;
 		
 		case 'air':
-			sendSignal(config.hvac.AIR_PIN);
+			sendSignalOn(config.hvac.FAN_PIN);
+			sendSignalOn(config.hvac.AIR_PIN);
+			sendSignalOn(config.hvac.HEAT_PIN);
 		break;
 
 		case 'heat':
-			sendSignal(config.hvac.HEAT_PIN);
+			sendSignalOn(config.hvac.FAN_PIN);
+			sendSignalOff(config.hvac.AIR_PIN);
+			sendSignalOn(config.hvac.HEAT_PIN);
+		break;
+		
+		case 'hvacOff':
+			sendSignalOff(config.hvac.FAN_PIN);
+			sendSignalOff(config.hvac.AIR_PIN);
+			sendSignalOff(config.hvac.HEAT_PIN);
 		break;
 
 		default:
