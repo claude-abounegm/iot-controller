@@ -11,5 +11,5 @@
 		"HEAT_PIN": 29,
 		"COOL_PIN": 32,
 		"FAN_PIN": 31
-	}	
+	}
 }
