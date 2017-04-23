@@ -11,7 +11,7 @@ const ON = 1;
 var blindsState = "unknown";
 var hvacState = "off";
 
-// we need to set the pins to be output pins; we also default their state to zero.
+// we need to set the pins to be output pins; we also default their state to OFF.
 (function initOutputPins(pins) {
 	pins.forEach((pin) => gpio.setup(pin, gpio.DIR_OUT, () => setPinState(pin, OFF)));
 })([
@@ -26,12 +26,14 @@ var hvacState = "off";
 	config.hvac.FAN_PIN
 ]);
 
-function sendRemoteSignal(pin) {
-	setPinState(pin, ON, () => setTimeout(() => setPinState(pin, OFF), 500));
+// sets the pin to ON or OFF
+function setPinState(pin, state,callback) {
+	gpio.write(pin, state, callback);
 }
 
-function setPinState(pin,state, callback) {
-	gpio.write(pin, state, callback);
+// sends an ON signal for 80ms then sets it to OFF again.
+function sendRemoteSignal(pin) {
+	setPinState(pin, ON, () => setTimeout(() => setPinState(pin, OFF), 80));
 }
 
 router.get('/blinds', function(req, res) {
@@ -51,8 +53,8 @@ router.put('/blinds', function(req, res, next) {
 		break;
 
 		case 'stop':
-			blindsState = "intermediate";
 			sendRemoteSignal(config.blinds.STOP_PIN);
+			blindsState = "intermediate";
 		break;
 
 		default:
