@@ -1,48 +1,57 @@
-var express = require('express');
-var router = express.Router();
-var gpio = require('rpi-gpio');
-var config = require('../config.json');
+"use strict";
+
+const express = require('express');
+const router = express.Router();
+const gpio = require('rpi-gpio');
+const config = require('../config.json');
 
 const OFF = 0;
 const ON = 1;
 
-setupSignal(config.blinds.UP_PIN);
-setupSignal(config.blinds.STOP_PIN);
-setupSignal(config.blinds.DOWN_PIN);
+var blindsState = "unknown";
+var hvacState = "off";
 
-setupSignal(config.hvac.HEAT_PIN);
-setupSignal(config.hvac.COOL_PIN);
-setupSignal(config.hvac.FAN_PIN);
+// we need to set the pins to be output pins; we also default their state to zero.
+(function initOutputPins(pins) {
+	pins.forEach((pin) => gpio.setup(pin, gpio.DIR_OUT, () => setPinState(pin, OFF)));
+})([
+	// blinds pins
+	config.blinds.UP_PIN,
+	config.blinds.STOP_PIN,
+	config.blinds.DOWN_PIN,
 
-function setupSignal(pin) {
-	gpio.setup(pin, gpio.DIR_OUT, () => {
-		gpio.write(pin, OFF);
-	});
-}
+	// hvac pins
+	config.hvac.HEAT_PIN,
+	config.hvac.COOL_PIN,
+	config.hvac.FAN_PIN
+]);
 
 function sendRemoteSignal(pin) {
-	gpio.write(pin, ON, () => {
-		setTimeout(() => {
-			gpio.write(pin, OFF);
-		}, 500);
-	});
+	setPinState(pin, ON, () => setTimeout(() => setPinState(pin, OFF), 500));
 }
 
-function sendSignal(pin,state) {
-	gpio.write(pin, state);
+function setPinState(pin,state, callback) {
+	gpio.write(pin, state, callback);
 }
+
+router.get('/blinds', function(req, res) {
+	res.json({ state: blindsState });
+});
 
 router.put('/blinds', function(req, res, next) {
 	switch(req.body['action']) {
 		case 'up':
 			sendRemoteSignal(config.blinds.UP_PIN);
+			blindsState = "open";
 		break;
 
 		case 'down':
 			sendRemoteSignal(config.blinds.DOWN_PIN);
+			blindsState = "closed";
 		break;
 
 		case 'stop':
+			blindsState = "intermediate";
 			sendRemoteSignal(config.blinds.STOP_PIN);
 		break;
 
@@ -54,12 +63,17 @@ router.put('/blinds', function(req, res, next) {
 	res.end();
 });
 
+router.get('/hvac', function(req, res) {
+	res.json({ state: hvacState });
+});
+
 router.put('/hvac', function(req, res, next) {
 	let heat = OFF;
 	let cool = OFF;
 	let fan = ON;
+	let state = req.body.action;
 
-	switch(req.body['action']) {
+	switch(state) {
 		case 'heat':
 			heat = ON;
 		break;
@@ -77,10 +91,11 @@ router.put('/hvac', function(req, res, next) {
 		return;
 	}
 
-	sendSignal(config.hvac.HEAT_PIN, heat);
-	sendSignal(config.hvac.COOL_PIN, cool);
-	sendSignal(config.hvac.FAN_PIN, fan);
+	setPinState(config.hvac.HEAT_PIN, heat);
+	setPinState(config.hvac.COOL_PIN, cool);
+	setPinState(config.hvac.FAN_PIN, fan);
 
+	hvacState = state;
 	res.end();
 });
 
