@@ -1,10 +1,12 @@
 'use strict';
 
 $(function() {
+	var blindsUrl = "/api/blinds";
+	var hvacUrl = "/api/hvac";
 	$(document).on('click', '#blinds_up', function() {
 		$.ajax({
 			method: "PUT",
-			url: "/control",
+			url: blindsUrl,
 			data: { action: "up" }
   		});
 	});
@@ -12,7 +14,7 @@ $(function() {
 	$(document).on('click', '#blinds_down', function() {
 		$.ajax({
 			method: "PUT",
-			url: "/control",
+			url: blindsUrl,
 			data: { action: "down" }
   		});
 	});
@@ -20,31 +22,23 @@ $(function() {
 	$(document).on('click', '#blinds_stop', function() {
 		$.ajax({
 			method: "PUT",
-			url: "/control",
+			url: blindsUrl,
 			data: { action: "stop" }
   		});
 	});
-
-	$(document).on('click', '#hvac_fan', function() {
-		$.ajax({
-			method: "PUT",
-			url: "/control",
-			data: { action: "fan" }
-  		});
-	});
 	
-	$(document).on('click', '#hvac_air', function() {
+	$(document).on('click', '#hvac_cool', function() {
 		$.ajax({
 			method: "PUT",
-			url: "/control",
-			data: { action: "air" }
+			url: hvacUrl,
+			data: { action: "cool" }
   		});
 	});
 	
 	$(document).on('click', '#hvac_heat', function() {
 		$.ajax({
 			method: "PUT",
-			url: "/control",
+			url: hvacUrl,
 			data: { action: "heat" }
   		});
 	});
@@ -52,8 +46,8 @@ $(function() {
 	$(document).on('click', '#hvac_off', function() {
 		$.ajax({
 			method: "PUT",
-			url: "/control",
-			data: { action: "hvacOff" }
+			url: hvacUrl,
+			data: { action: "off" }
   		});
 	});
 });

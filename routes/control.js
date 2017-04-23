@@ -3,37 +3,36 @@ var router = express.Router();
 var gpio = require('rpi-gpio');
 var config = require('../config.json');
 
+const OFF = 0;
+const ON = 1;
+
 setupSignal(config.blinds.UP_PIN);
 setupSignal(config.blinds.STOP_PIN);
 setupSignal(config.blinds.DOWN_PIN);
-setupSignal(config.hvac.FAN_PIN);
-setupSignal(config.hvac.AIR_PIN);
+
 setupSignal(config.hvac.HEAT_PIN);
+setupSignal(config.hvac.COOL_PIN);
+setupSignal(config.hvac.FAN_PIN);
 
 function setupSignal(pin) {
 	gpio.setup(pin, gpio.DIR_OUT, () => {
-		gpio.write(pin, 0);
+		gpio.write(pin, OFF);
 	});
 }
 
 function sendRemoteSignal(pin) {
-	gpio.write(pin, 1, () => {
+	gpio.write(pin, ON, () => {
 		setTimeout(() => {
-			gpio.write(pin, 0);
+			gpio.write(pin, OFF);
 		}, 500);
 	});
 }
 
-function sendSignalOn(pin) {
-	gpio.write(pin, 1, () => {});
+function sendSignal(pin,state) {
+	gpio.write(pin, state);
 }
 
-function sendSignalOff(pin) {
-	gpio.write(pin, 0, () => {});
-}
-
-
-router.put('/', function(req, res, next) {
+router.put('/blinds', function(req, res, next) {
 	switch(req.body['action']) {
 		case 'up':
 			sendRemoteSignal(config.blinds.UP_PIN);
@@ -46,35 +45,41 @@ router.put('/', function(req, res, next) {
 		case 'stop':
 			sendRemoteSignal(config.blinds.STOP_PIN);
 		break;
-	
-		case 'fan':
-			sendSignalOn(config.hvac.FAN_PIN);
-			sendSignalOff(config.hvac.AIR_PIN);
-			sendSignalOff(config.hvac.HEAT_PIN);
-		break;
-		
-		case 'air':
-			sendSignalOn(config.hvac.FAN_PIN);
-			sendSignalOn(config.hvac.AIR_PIN);
-			sendSignalOn(config.hvac.HEAT_PIN);
+
+		default:
+			next();
+		return;
+	}
+
+	res.end();
+});
+
+router.put('/hvac', function(req, res, next) {
+	let heat = OFF;
+	let cool = OFF;
+	let fan = ON;
+
+	switch(req.body['action']) {
+		case 'heat':
+			heat = ON;
 		break;
 
-		case 'heat':
-			sendSignalOn(config.hvac.FAN_PIN);
-			sendSignalOff(config.hvac.AIR_PIN);
-			sendSignalOn(config.hvac.HEAT_PIN);
+		case 'cool':
+			cool = ON;
 		break;
 		
-		case 'hvacOff':
-			sendSignalOff(config.hvac.FAN_PIN);
-			sendSignalOff(config.hvac.AIR_PIN);
-			sendSignalOff(config.hvac.HEAT_PIN);
+		case 'off':
+			fan = OFF;
 		break;
 
 		default:
 			next();
 		return;
 	}
+
+	sendSignal(config.hvac.HEAT_PIN, heat);
+	sendSignal(config.hvac.COOL_PIN, cool);
+	sendSignal(config.hvac.FAN_PIN, fan);
 
 	res.end();
 });
