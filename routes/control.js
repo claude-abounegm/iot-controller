@@ -1,104 +1,106 @@
-"use strict";
++function () {
+    "use strict";
 
-const express = require('express');
-const router = express.Router();
-const gpio = require('rpi-gpio');
-const config = require('../config.json');
+    const express = require('express');
+    const router = express.Router();
+    const gpio = require('rpi-gpio');
+    const config = require('../config.json');
 
-const OFF = 0;
-const ON = 1;
+    const OFF = 0;
+    const ON = 1;
 
-var blindsState = "unknown";
-var hvacState = "off";
+    let blindsState = "unknown";
+    let hvacState = "off";
 
-// we need to set the pins to be output pins; we also default their state to OFF.
-(function initOutputPins(pins) {
-	pins.forEach((pin) => gpio.setup(pin, gpio.DIR_OUT, () => setPinState(pin, OFF)));
-})([
-	// blinds pins
-	config.blinds.UP_PIN,
-	config.blinds.STOP_PIN,
-	config.blinds.DOWN_PIN,
+    // we need to set the pins to be output pins; we also default their state to OFF.
+    (function initOutputPins(pins) {
+        pins.forEach((pin) => gpio.setup(pin, gpio.DIR_OUT, () => setPinState(pin, OFF)));
+    })([
+        // blinds pins
+        config.blinds.UP_PIN,
+        config.blinds.STOP_PIN,
+        config.blinds.DOWN_PIN,
 
-	// hvac pins
-	config.hvac.HEAT_PIN,
-	config.hvac.COOL_PIN,
-	config.hvac.FAN_PIN
-]);
+        // hvac pins
+        config.hvac.HEAT_PIN,
+        config.hvac.COOL_PIN,
+        config.hvac.FAN_PIN
+    ]);
 
-// sets the pin to ON or OFF
-function setPinState(pin, state,callback) {
-	gpio.write(pin, state, callback);
-}
+    // sets the pin to ON or OFF
+    function setPinState(pin, state, callback) {
+        gpio.write(pin, state, callback);
+    }
 
-// sends an ON signal for 80ms then sets it to OFF again.
-function sendRemoteSignal(pin) {
-	setPinState(pin, ON, () => setTimeout(() => setPinState(pin, OFF), 80));
-}
+    // sends an ON signal for 80ms then sets it to OFF again.
+    function sendRemoteSignal(pin) {
+        setPinState(pin, ON, () => setTimeout(() => setPinState(pin, OFF), 80));
+    }
 
-router.get('/blinds', function(req, res) {
-	res.json({ state: blindsState });
-});
+    router.get('/blinds', function (req, res) {
+        res.json({state: blindsState});
+    });
 
-router.put('/blinds', function(req, res, next) {
-	switch(req.body['action']) {
-		case 'up':
-			sendRemoteSignal(config.blinds.UP_PIN);
-			blindsState = "open";
-		break;
+    router.put('/blinds', function (req, res, next) {
+        switch (req.body['action']) {
+            case 'up':
+                sendRemoteSignal(config.blinds.UP_PIN);
+                blindsState = "open";
+                break;
 
-		case 'down':
-			sendRemoteSignal(config.blinds.DOWN_PIN);
-			blindsState = "closed";
-		break;
+            case 'down':
+                sendRemoteSignal(config.blinds.DOWN_PIN);
+                blindsState = "closed";
+                break;
 
-		case 'stop':
-			sendRemoteSignal(config.blinds.STOP_PIN);
-			blindsState = "intermediate";
-		break;
+            case 'stop':
+                sendRemoteSignal(config.blinds.STOP_PIN);
+                blindsState = "intermediate";
+                break;
 
-		default:
-			next();
-		return;
-	}
+            default:
+                next();
+                return;
+        }
 
-	res.end();
-});
+        res.end();
+    });
 
-router.get('/hvac', function(req, res) {
-	res.json({ state: hvacState });
-});
+    router.get('/hvac', function (req, res) {
+        res.json({state: hvacState});
+    });
 
-router.put('/hvac', function(req, res, next) {
-	let heat = OFF;
-	let cool = OFF;
-	let fan = ON;
-	let state = req.body.action;
+    router.put('/hvac', function (req, res, next) {
+        let heat = OFF;
+        let cool = OFF;
+        let fan = ON;
+        let state = req.body.action;
 
-	switch(state) {
-		case 'heat':
-			heat = ON;
-		break;
+        switch (state) {
+            case 'heat':
+                heat = ON;
+                break;
 
-		case 'cool':
-			cool = ON;
-		break;
-		
-		case 'off':
-			fan = OFF;
-		break;
+            case 'cool':
+                cool = ON;
+                break;
 
-		default:
-			next();
-		return;
-	}
+            case 'off':
+                fan = OFF;
+                break;
 
-	setPinState(config.hvac.HEAT_PIN, heat);
-	setPinState(config.hvac.COOL_PIN, cool);
-	setPinState(config.hvac.FAN_PIN, fan);
+            default:
+                next();
+                return;
+        }
 
-	hvacState = state;
-	res.end();
-});
+        setPinState(config.hvac.HEAT_PIN, heat);
+        setPinState(config.hvac.COOL_PIN, cool);
+        setPinState(config.hvac.FAN_PIN, fan);
 
-module.exports = router;
+        hvacState = state;
+        res.end();
+    });
+
+    module.exports = router;
+}();
