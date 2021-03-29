@@ -9,13 +9,8 @@ try {
   gpio = require("rpi-gpio");
 } catch (e) {
   gpio = {
-    setup() {
-      console.log(arguments);
-    },
-
-    write() {
-      console.log(arguments);
-    },
+    setup() {},
+    write() {},
   };
 }
 
@@ -47,6 +42,8 @@ initOutputPins([
 // sets the pin to ON or OFF
 function setPinState(pin, state, callback) {
   gpio.write(pin, state, callback);
+
+  console.log(`set pin ${pin} to ${state}`);
 }
 
 // sends an ON signal for 80ms then sets it to OFF again.

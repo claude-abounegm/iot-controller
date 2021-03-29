@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./src",
+    "watch": "nodemon ./src",
     "postinstall": "bower install"
   },
   "dependencies": {
@@ -14,6 +15,7 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "bower": "^1.8.12"
+    "bower": "^1.8.12",
+    "nodemon": "^2.0.7"
   }
 }
