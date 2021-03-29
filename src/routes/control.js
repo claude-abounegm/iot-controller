@@ -2,32 +2,11 @@
 
 const express = require("express");
 const router = express.Router();
+const GPIO = require("../lib/GPIO");
 const config = require("../../config.json");
 
-let gpio;
-try {
-  gpio = require("rpi-gpio");
-} catch (e) {
-  gpio = {
-    setup() {},
-    write() {},
-  };
-}
-
-const OFF = 0;
-const ON = 1;
-
-let blindsState = "unknown";
-let hvacState = "off";
-
-function initOutputPins(pins) {
-  pins.forEach((pin) =>
-    gpio.setup(pin, gpio.DIR_OUT, () => setPinState(pin, OFF))
-  );
-}
-
 // we need to set the pins to be output pins; we also default their state to OFF.
-initOutputPins([
+const gpio = new GPIO([
   // blinds pins
   config.blinds.UP_PIN,
   config.blinds.STOP_PIN,
@@ -39,17 +18,8 @@ initOutputPins([
   config.hvac.FAN_PIN,
 ]);
 
-// sets the pin to ON or OFF
-function setPinState(pin, state, callback) {
-  gpio.write(pin, state, callback);
-
-  console.log(`set pin ${pin} to ${state}`);
-}
-
-// sends an ON signal for 80ms then sets it to OFF again.
-function sendRemoteSignal(pin) {
-  setPinState(pin, ON, () => setTimeout(() => setPinState(pin, OFF), 80));
-}
+let blindsState = "unknown";
+let hvacState = "off";
 
 router.get("/blinds", function (req, res) {
   res.json({ state: blindsState });
@@ -58,17 +28,17 @@ router.get("/blinds", function (req, res) {
 router.put("/blinds", function (req, res, next) {
   switch (req.body["action"]) {
     case "up":
-      sendRemoteSignal(config.blinds.UP_PIN);
+      gpio.sendFlashSignal(config.blinds.UP_PIN);
       blindsState = "open";
       break;
 
     case "down":
-      sendRemoteSignal(config.blinds.DOWN_PIN);
+      gpio.sendFlashSignal(config.blinds.DOWN_PIN);
       blindsState = "closed";
       break;
 
     case "stop":
-      sendRemoteSignal(config.blinds.STOP_PIN);
+      gpio.sendFlashSignal(config.blinds.STOP_PIN);
       blindsState = "intermediate";
       break;
 
@@ -108,9 +78,9 @@ router.put("/hvac", function (req, res, next) {
       return;
   }
 
-  setPinState(config.hvac.HEAT_PIN, heat);
-  setPinState(config.hvac.COOL_PIN, cool);
-  setPinState(config.hvac.FAN_PIN, fan);
+  gpio.setPinState(config.hvac.HEAT_PIN, heat);
+  gpio.setPinState(config.hvac.COOL_PIN, cool);
+  gpio.setPinState(config.hvac.FAN_PIN, fan);
 
   hvacState = state;
   res.end();
