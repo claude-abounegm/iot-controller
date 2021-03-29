@@ -2,8 +2,22 @@
 
 const express = require("express");
 const router = express.Router();
-const gpio = require("rpi-gpio");
-const config = require("../config.json");
+const config = require("../../config.json");
+
+let gpio;
+try {
+  gpio = require("rpi-gpio");
+} catch (e) {
+  gpio = {
+    setup() {
+      console.log(arguments);
+    },
+
+    write() {
+      console.log(arguments);
+    },
+  };
+}
 
 const OFF = 0;
 const ON = 1;
