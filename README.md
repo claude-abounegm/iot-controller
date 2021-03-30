@@ -1,6 +1,15 @@
 # iot-controller
+
 A Node.js application which can take post requests to control connected devices.
+
+## Install
+
+`npm i`
+
+## Run
 
 `sudo npm start`
 
-The details on the components used and the wiring will be posted soon.
+## Dev
+
+`sudo npm run watch`
