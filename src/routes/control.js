@@ -1,11 +1,11 @@
 "use strict";
 
 const express = require("express");
-const router = express.Router();
 const GPIO = require("../lib/GPIO");
 const config = require("../../config.json");
 
-// we need to set the pins to be output pins; we also default their state to OFF.
+const router = express.Router();
+
 const gpio = new GPIO([
   // blinds pins
   config.blinds.UP_PIN,
@@ -55,22 +55,22 @@ router.get("/hvac", function (req, res) {
 });
 
 router.put("/hvac", function (req, res, next) {
-  let heat = OFF;
-  let cool = OFF;
-  let fan = ON;
+  let heat = GPIO.OFF;
+  let cool = GPIO.OFF;
+  let fan = GPIO.ON;
   let state = req.body.action;
 
   switch (state) {
     case "heat":
-      heat = ON;
+      heat = GPIO.ON;
       break;
 
     case "cool":
-      cool = ON;
+      cool = GPIO.ON;
       break;
 
     case "off":
-      fan = OFF;
+      fan = GPIO.OFF;
       break;
 
     default:

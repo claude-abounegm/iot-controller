@@ -10,8 +10,10 @@ try {
     setup(pin, direction) {
       console.log(`setup pin ${pin}, direction: ${direction}`);
     },
-    write(pin, state) {
+    write(pin, state, callback) {
       console.log(`set pin ${pin} to ${state}`);
+
+      callback && callback();
     },
     DIR_IN: "in",
     DIR_OUT: "out",
@@ -28,7 +30,10 @@ class GPIO {
   static ON = ON;
 
   constructor(pins) {
-    this.initOutputPins(pins);
+    if (pins) {
+      // we need to set the pins to be output pins; we also default their state to OFF.
+      this.initOutputPins(pins);
+    }
   }
 
   initOutputPins(pins) {
@@ -53,7 +58,7 @@ class GPIO {
    * @param {*} timeout
    */
   sendFlashSignal(pin, timeout = 80) {
-    setPinState(pin, ON, () =>
+    this.setPinState(pin, ON, () =>
       setTimeout(() => this.setPinState(pin, OFF), timeout)
     );
   }
